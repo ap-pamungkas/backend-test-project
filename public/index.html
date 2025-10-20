@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Product CRUD</title>
+  <link rel="stylesheet" href="/style.css" />
+  <script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+</head>
+<body>
+  <div id="app">
+    <!-- Auth -->
+    <div v-if="!user">
+      <h2>Register</h2>
+      <form @submit.prevent="register">
+        <input v-model="reg.name" placeholder="Name" required />
+        <input v-model="reg.email" type="email" placeholder="Email" required />
+        <input v-model="reg.password" type="password" placeholder="Password" required />
+        <button>Register</button>
+      </form>
+
+      <h2>Login</h2>
+      <form @submit.prevent="login">
+        <input v-model="log.email" type="email" placeholder="Email" required />
+        <input v-model="log.password" type="password" placeholder="Password" required />
+        <button>Login</button>
+      </form>
+    </div>
+
+    <!-- CRUD -->
+    <div v-else>
+      <p>Hi {{ user.name }}! <button @click="logout">Logout</button></p>
+
+      <h2>Products</h2>
+      <input v-model="keyword" @input="fetchProducts" placeholder="Search..." />
+      <button @click="openAdd">+ Add Product</button>
+
+      <table border="1" cellpadding="6">
+        <thead><tr><th>Name</th><th>Price</th><th>Description</th><th></th></tr></thead>
+        <tbody>
+          <tr v-for="p in products" :key="p._id">
+            <td>{{ p.name }}</td>
+            <td>{{ p.price }}</td>
+            <td>{{ p.description }}</td>
+            <td>
+              <button @click="edit(p)">Edit</button>
+              <button @click="remove(p._id)">Delete</button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+
+      <!-- Form Add/Edit -->
+      <div v-if="form.show">
+        <h3>{{ form.edit ? 'Edit' : 'Add' }} Product</h3>
+        <form @submit.prevent="save">
+          <input v-model="form.name" placeholder="Name" required />
+          <input v-model.number="form.price" type="number" step="0.01" placeholder="Price" required />
+          <textarea v-model="form.description" placeholder="Description"></textarea>
+          <button type="submit">Save</button>
+          <button type="button" @click="closeForm">Cancel</button>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const { createApp } = Vue;
+    createApp({
+      data() {
+        return {
+          user: null,
+          reg: { name: '', email: '', password: '' },
+          log: { email: '', password: '' },
+          products: [],
+          keyword: '',
+          form: { show: false, edit: false, _id: '', name: '', price: '', description: '' }
+        };
+      },
+      async mounted() {
+        await this.checkUser();
+        this.fetchProducts();
+      },
+      methods: {
+        async checkUser() {
+          try {
+            const { data } = await axios.get('/api/auth/me', { withCredentials: true });
+            this.user = data.user;
+          } catch {}
+        },
+        async register() {
+          await axios.post('/api/auth/register', this.reg);
+          this.reg = { name: '', email: '', password: '' };
+          alert('Registered! Please login.');
+        },
+        async login() {
+          await axios.post('/api/auth/login', this.log, { withCredentials: true });
+          this.log = { email: '', password: '' };
+          await this.checkUser();
+          this.fetchProducts();
+        },
+        async logout() {
+          await axios.post('/api/auth/logout', {}, { withCredentials: true });
+          this.user = null;
+        },
+        async fetchProducts() {
+          const params = { q: this.keyword };
+          const { data } = await axios.get('/api/products', { params });
+          this.products = data;
+        },
+        openAdd() {
+          this.form = { show: true, edit: false, _id: '', name: '', price: '', description: '' };
+        },
+        edit(p) {
+          this.form = { show: true, edit: true, _id: p._id, name: p.name, price: p.price, description: p.description };
+        },
+        closeForm() {
+          this.form.show = false;
+        },
+        async save() {
+          const payload = { name: this.form.name, price: Number(this.form.price), description: this.form.description };
+          if (this.form.edit) {
+            await axios.patch(`/api/products/${this.form._id}`, payload, { withCredentials: true });
+          } else {
+            await axios.post('/api/products', payload, { withCredentials: true });
+          }
+          this.closeForm();
+          this.fetchProducts();
+        },
+        async remove(id) {
+          if (!confirm('Sure?')) return;
+          await axios.delete(`/api/products/${id}`, { withCredentials: true });
+          this.fetchProducts();
+        }
+      }
+    }).mount('#app');
+  </script>
+</body>
+</html>
