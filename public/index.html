@@ -1,139 +1,334 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <title>Product CRUD</title>
-  <link rel="stylesheet" href="/style.css" />
-  <script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
-</head>
-<body>
-  <div id="app">
-    <!-- Auth -->
-    <div v-if="!user">
-      <h2>Register</h2>
-      <form @submit.prevent="register">
-        <input v-model="reg.name" placeholder="Name" required />
-        <input v-model="reg.email" type="email" placeholder="Email" required />
-        <input v-model="reg.password" type="password" placeholder="Password" required />
-        <button>Register</button>
-      </form>
+  <head>
+    <meta charset="UTF-8" />
+    <title>Product CRUD</title>
+    <!-- Bootstrap 5 CSS -->
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+    <script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <style>
+      /* custom agar toast berada di pojok kanan atas */
+      .toast-container {
+        position: fixed;
+        top: 15px;
+        right: 15px;
+        z-index: 1050;
+      }
+    </style>
+  </head>
 
-      <h2>Login</h2>
-      <form @submit.prevent="login">
-        <input v-model="log.email" type="email" placeholder="Email" required />
-        <input v-model="log.password" type="password" placeholder="Password" required />
-        <button>Login</button>
-      </form>
-    </div>
+  <body>
+    <div id="app">
+      <!-- ========== Toast Notification ========== -->
+      <div class="toast-container">
+        <div
+          class="toast align-items-center text-bg-danger border-0"
+          :class="{ show: toast.show }"
+          role="alert"
+        >
+          <div class="d-flex">
+            <div class="toast-body">{{ toast.message }}</div>
+            <button
+              type="button"
+              class="btn-close btn-close-white me-2 m-auto"
+              @click="toast.show = false"
+            ></button>
+          </div>
+        </div>
+      </div>
 
-    <!-- CRUD -->
-    <div v-else>
-      <p>Hi {{ user.name }}! <button @click="logout">Logout</button></p>
+      <!-- ========== Auth Card ========== -->
+      <div class="container mt-5" v-if="!user">
+        <div class="row justify-content-center">
+          <div class="col-md-5">
+            <!-- Register -->
+            <div class="card shadow mb-4">
+              <div class="card-header bg-primary text-white">
+                <h5 class="mb-0">Register</h5>
+              </div>
+              <div class="card-body">
+                <form @submit.prevent="register">
+                  <div class="mb-3">
+                    <label class="form-label">Name</label>
+                    <input
+                      v-model="reg.name"
+                      class="form-control"
+                      placeholder="Your name"
+                      required
+                    />
+                  </div>
+                  <div class="mb-3">
+                    <label class="form-label">Email</label>
+                    <input
+                      v-model="reg.email"
+                      type="email"
+                      class="form-control"
+                      placeholder="name@example.com"
+                      required
+                    />
+                  </div>
+                  <div class="mb-3">
+                    <label class="form-label">Password</label>
+                    <input
+                      v-model="reg.password"
+                      type="password"
+                      class="form-control"
+                      placeholder="Min 4 characters"
+                      required
+                    />
+                  </div>
+                  <button class="btn btn-primary w-100">Register</button>
+                </form>
+              </div>
+            </div>
 
-      <h2>Products</h2>
-      <input v-model="keyword" @input="fetchProducts" placeholder="Search..." />
-      <button @click="openAdd">+ Add Product</button>
+            <!-- Login -->
+            <div class="card shadow">
+              <div class="card-header bg-success text-white">
+                <h5 class="mb-0">Login</h5>
+              </div>
+              <div class="card-body">
+                <form @submit.prevent="login">
+                  <div class="mb-3">
+                    <label class="form-label">Email</label>
+                    <input
+                      v-model="log.email"
+                      type="email"
+                      class="form-control"
+                      placeholder="name@example.com"
+                      required
+                    />
+                  </div>
+                  <div class="mb-3">
+                    <label class="form-label">Password</label>
+                    <input
+                      v-model="log.password"
+                      type="password"
+                      class="form-control"
+                      placeholder="Password"
+                      required
+                    />
+                  </div>
+                  <button class="btn btn-success w-100">Login</button>
+                </form>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
 
-      <table border="1" cellpadding="6">
-        <thead><tr><th>Name</th><th>Price</th><th>Description</th><th></th></tr></thead>
-        <tbody>
-          <tr v-for="p in products" :key="p._id">
-            <td>{{ p.name }}</td>
-            <td>{{ p.price }}</td>
-            <td>{{ p.description }}</td>
-            <td>
-              <button @click="edit(p)">Edit</button>
-              <button @click="remove(p._id)">Delete</button>
-            </td>
-          </tr>
-        </tbody>
-      </table>
+      <!-- ========== CRUD Area ========== -->
+      <div class="container mt-4" v-else>
+        <nav class="navbar navbar-light bg-light mb-4">
+          <div class="container-fluid">
+            <span class="navbar-brand mb-0 h3">Hi, {{ user.name }}!</span>
+            <button class="btn btn-outline-danger btn-sm" @click="logout">
+              Logout
+            </button>
+          </div>
+        </nav>
 
-      <!-- Form Add/Edit -->
-      <div v-if="form.show">
-        <h3>{{ form.edit ? 'Edit' : 'Add' }} Product</h3>
-        <form @submit.prevent="save">
-          <input v-model="form.name" placeholder="Name" required />
-          <input v-model.number="form.price" type="number" step="0.01" placeholder="Price" required />
-          <textarea v-model="form.description" placeholder="Description"></textarea>
-          <button type="submit">Save</button>
-          <button type="button" @click="closeForm">Cancel</button>
-        </form>
+        <!-- Toolbar -->
+        <div class="d-flex justify-content-between mb-3">
+          <div class="w-50">
+            <input
+              v-model="keyword"
+              @input="fetchProducts"
+              class="form-control"
+              placeholder="Search product..."
+            />
+          </div>
+          <button class="btn btn-primary" @click="openAdd">
+            + Add Product
+          </button>
+        </div>
+
+        <!-- Tabel -->
+        <div class="table-responsive">
+          <table class="table table-hover align-middle">
+            <thead class="table-dark">
+              <tr>
+                <th>Name</th>
+                <th>Price</th>
+                <th>Description</th>
+                <th width="160">Action</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr v-for="p in products" :key="p._id">
+                <td>{{ p.name }}</td>
+                <td>Rp {{ Number(p.price).toLocaleString('id-ID') }}</td>
+                <td>{{ p.description || '-' }}</td>
+                <td>
+                  <button
+                    class="btn btn-sm btn-warning me-1"
+                    @click="edit(p)"
+                  >
+                    Edit
+                  </button>
+                  <button
+                    class="btn btn-sm btn-danger"
+                    @click="remove(p._id)"
+                  >
+                    Delete
+                  </button>
+                </td>
+              </tr>
+              <tr v-if="products.length === 0">
+                <td colspan="4" class="text-center text-muted">
+                  No products found
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Modal Add/Edit -->
+        <div class="modal fade" :class="{ show: form.show }" style="display: block;" tabindex="-1" v-if="form.show">
+          <div class="modal-dialog">
+            <div class="modal-content">
+              <form @submit.prevent="save">
+                <div class="modal-header">
+                  <h5 class="modal-title">
+                    {{ form.edit ? 'Edit' : 'Add' }} Product
+                  </h5>
+                  <button
+                    type="button"
+                    class="btn-close"
+                    @click="closeForm"
+                  ></button>
+                </div>
+                <div class="modal-body">
+                  <div class="mb-3">
+                    <label class="form-label">Name</label>
+                    <input
+                      v-model="form.name"
+                      class="form-control"
+                      required
+                    />
+                  </div>
+                  <div class="mb-3">
+                    <label class="form-label">Price</label>
+                    <input
+                      v-model.number="form.price"
+                      type="number"
+                      step="0.01"
+                      class="form-control"
+                      required
+                    />
+                  </div>
+                  <div class="mb-3">
+                    <label class="form-label">Description</label>
+                    <textarea
+                      v-model="form.description"
+                      class="form-control"
+                      rows="3"
+                    ></textarea>
+                  </div>
+                </div>
+                <div class="modal-footer">
+                  <button type="button" class="btn btn-secondary" @click="closeForm">
+                    Cancel
+                  </button>
+                  <button type="submit" class="btn btn-primary">Save</button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+        <div class="modal-backdrop fade show" v-if="form.show" @click="closeForm"></div>
       </div>
     </div>
-  </div>
 
-  <script>
-    const { createApp } = Vue;
-    createApp({
-      data() {
-        return {
-          user: null,
-          reg: { name: '', email: '', password: '' },
-          log: { email: '', password: '' },
-          products: [],
-          keyword: '',
-          form: { show: false, edit: false, _id: '', name: '', price: '', description: '' }
-        };
-      },
-      async mounted() {
-        await this.checkUser();
-        this.fetchProducts();
-      },
-      methods: {
-        async checkUser() {
-          try {
-            const { data } = await axios.get('/api/auth/me', { withCredentials: true });
-            this.user = data.user;
-          } catch {}
+    <!-- Bootstrap 5 JS Bundle -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+      const { createApp } = Vue;
+      createApp({
+        data() {
+          return {
+            user: null,
+            reg: { name: '', email: '', password: '' },
+            log: { email: '', password: '' },
+            products: [],
+            keyword: '',
+            form: { show: false, edit: false, _id: '', name: '', price: '', description: '' },
+            toast: { show: false, message: '' }
+          };
         },
-        async register() {
-          await axios.post('/api/auth/register', this.reg);
-          this.reg = { name: '', email: '', password: '' };
-          alert('Registered! Please login.');
-        },
-        async login() {
-          await axios.post('/api/auth/login', this.log, { withCredentials: true });
-          this.log = { email: '', password: '' };
+        async mounted() {
           await this.checkUser();
           this.fetchProducts();
         },
-        async logout() {
-          await axios.post('/api/auth/logout', {}, { withCredentials: true });
-          this.user = null;
-        },
-        async fetchProducts() {
-          const params = { q: this.keyword };
-          const { data } = await axios.get('/api/products', { params });
-          this.products = data;
-        },
-        openAdd() {
-          this.form = { show: true, edit: false, _id: '', name: '', price: '', description: '' };
-        },
-        edit(p) {
-          this.form = { show: true, edit: true, _id: p._id, name: p.name, price: p.price, description: p.description };
-        },
-        closeForm() {
-          this.form.show = false;
-        },
-        async save() {
-          const payload = { name: this.form.name, price: Number(this.form.price), description: this.form.description };
-          if (this.form.edit) {
-            await axios.patch(`/api/products/${this.form._id}`, payload, { withCredentials: true });
-          } else {
-            await axios.post('/api/products', payload, { withCredentials: true });
+        methods: {
+          async checkUser() {
+            try {
+              const { data } = await axios.get('/api/auth/me', { withCredentials: true });
+              this.user = data.user;
+            } catch {}
+          },
+          async register() {
+            try {
+              await axios.post('/api/auth/register', this.reg);
+              this.reg = { name: '', email: '', password: '' };
+              alert('Registered! Please login.');
+            } catch (e) {
+              alert(e.response?.data?.message || 'Register failed');
+            }
+          },
+          async login() {
+            try {
+              await axios.post('/api/auth/login', this.log, { withCredentials: true });
+              this.log = { email: '', password: '' };
+              await this.checkUser();
+              this.fetchProducts();
+            } catch (e) {
+              this.showToast(e.response?.data?.message || 'Login failed');
+            }
+          },
+          showToast(msg) {
+            this.toast = { show: true, message: msg };
+            setTimeout(() => (this.toast.show = false), 4000);
+          },
+          async logout() {
+            await axios.post('/api/auth/logout', {}, { withCredentials: true });
+            this.user = null;
+          },
+          async fetchProducts() {
+            const params = { q: this.keyword };
+            const { data } = await axios.get('/api/products', { params });
+            this.products = data;
+          },
+          openAdd() {
+            this.form = { show: true, edit: false, _id: '', name: '', price: '', description: '' };
+          },
+          edit(p) {
+            this.form = { show: true, edit: true, _id: p._id, name: p.name, price: p.price, description: p.description };
+          },
+          closeForm() {
+            this.form.show = false;
+          },
+          async save() {
+            const payload = { name: this.form.name, price: Number(this.form.price), description: this.form.description };
+            if (this.form.edit) {
+              await axios.patch(`/api/products/${this.form._id}`, payload, { withCredentials: true });
+            } else {
+              await axios.post('/api/products', payload, { withCredentials: true });
+            }
+            this.closeForm();
+            this.fetchProducts();
+          },
+          async remove(id) {
+            if (!confirm('Sure?')) return;
+            await axios.delete(`/api/products/${id}`, { withCredentials: true });
+            this.fetchProducts();
           }
-          this.closeForm();
-          this.fetchProducts();
-        },
-        async remove(id) {
-          if (!confirm('Sure?')) return;
-          await axios.delete(`/api/products/${id}`, { withCredentials: true });
-          this.fetchProducts();
         }
-      }
-    }).mount('#app');
-  </script>
-</body>
+      }).mount('#app');
+    </script>
+  </body>
 </html>
