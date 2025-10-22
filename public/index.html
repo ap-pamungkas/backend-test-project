@@ -11,7 +11,6 @@
     <script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
     <style>
-     
       .toast-container {
         position: fixed;
         top: 15px;
@@ -40,11 +39,11 @@
           </div>
         </div>
       </div>
-<div v-if="loading" class="text-center mt-5">
-  <div class="spinner-border" role="status">
-    <span class="visually-hidden">Loading...</span>
-  </div>
-</div>
+      <div v-if="loading" class="text-center mt-5">
+        <div class="spinner-border" role="status">
+          <span class="visually-hidden">Loading...</span>
+        </div>
+      </div>
       <!-- ========== Auth Card ========== -->
       <div class="container mt-5" v-if="!loading && !user">
         <div class="row justify-content-center">
@@ -168,16 +167,10 @@
                 <td>Rp {{ Number(p.price).toLocaleString('id-ID') }}</td>
                 <td>{{ p.description || '-' }}</td>
                 <td>
-                  <button
-                    class="btn btn-sm btn-warning me-1"
-                    @click="edit(p)"
-                  >
+                  <button class="btn btn-sm btn-warning me-1" @click="edit(p)">
                     Edit
                   </button>
-                  <button
-                    class="btn btn-sm btn-danger"
-                    @click="remove(p._id)"
-                  >
+                  <button class="btn btn-sm btn-danger" @click="remove(p._id)">
                     Delete
                   </button>
                 </td>
@@ -192,7 +185,13 @@
         </div>
 
         <!-- Modal Add/Edit -->
-        <div class="modal fade" :class="{ show: form.show }" style="display: block;" tabindex="-1" v-if="form.show">
+        <div
+          class="modal fade"
+          :class="{ show: form.show }"
+          style="display: block"
+          tabindex="-1"
+          v-if="form.show"
+        >
           <div class="modal-dialog">
             <div class="modal-content">
               <form @submit.prevent="save">
@@ -209,11 +208,7 @@
                 <div class="modal-body">
                   <div class="mb-3">
                     <label class="form-label">Name</label>
-                    <input
-                      v-model="form.name"
-                      class="form-control"
-                      required
-                    />
+                    <input v-model="form.name" class="form-control" required />
                   </div>
                   <div class="mb-3">
                     <label class="form-label">Price</label>
@@ -235,7 +230,11 @@
                   </div>
                 </div>
                 <div class="modal-footer">
-                  <button type="button" class="btn btn-secondary" @click="closeForm">
+                  <button
+                    type="button"
+                    class="btn btn-secondary"
+                    @click="closeForm"
+                  >
                     Cancel
                   </button>
                   <button type="submit" class="btn btn-primary">Save</button>
@@ -244,7 +243,11 @@
             </div>
           </div>
         </div>
-        <div class="modal-backdrop fade show" v-if="form.show" @click="closeForm"></div>
+        <div
+          class="modal-backdrop fade show"
+          v-if="form.show"
+          @click="closeForm"
+        ></div>
       </div>
     </div>
 
@@ -257,51 +260,56 @@
           return {
             user: null,
             loading: true,
-            reg: { name: '', email: '', password: '' },
-            log: { email: '', password: '' },
+            reg: { name: "", email: "", password: "" },
+            log: { email: "", password: "" },
             products: [],
-            keyword: '',
-            form: { show: false, edit: false, _id: '', name: '', price: '', description: '' },
-            toast: { show: false, message: '' }
+            keyword: "",
+            form: {
+              show: false,
+              edit: false,
+              _id: "",
+              name: "",
+              price: "",
+              description: "",
+            },
+            toast: { show: false, message: "" },
           };
         },
         async mounted() {
           await this.checkUser();
           this.loading = false;
-          await this.fetchProducts();
-
-          if (this.user) {
-             this.fetchProducts();
-          }
         },
         methods: {
           async checkUser() {
             try {
-              const { data } = await axios.get('/api/auth/me', { withCredentials: true });
+              const { data } = await axios.get("/api/auth/me", {
+                withCredentials: true,
+              });
               this.user = data.user;
-
-              
+              this.fetchProducts();
             } catch {
               this.user = null;
             }
           },
           async register() {
             try {
-              await axios.post('/api/auth/register', this.reg);
-              this.reg = { name: '', email: '', password: '' };
-              alert('Registered! Please login.');
+              await axios.post("/api/auth/register", this.reg);
+              this.reg = { name: "", email: "", password: "" };
+              alert("Registered! Please login.");
             } catch (e) {
-              alert(e.response?.data?.message || 'Register failed');
+              alert(e.response?.data?.message || "Register failed");
             }
           },
           async login() {
             try {
-              await axios.post('/api/auth/login', this.log, { withCredentials: true });
-              this.log = { email: '', password: '' };
+              await axios.post("/api/auth/login", this.log, {
+                withCredentials: true,
+              });
+              this.log = { email: "", password: "" };
               await this.checkUser();
               this.fetchProducts();
             } catch (e) {
-              this.showToast(e.response?.data?.message || 'Login failed');
+              this.showToast(e.response?.data?.message || "Login failed");
             }
           },
           showToast(msg) {
@@ -309,40 +317,64 @@
             setTimeout(() => (this.toast.show = false), 4000);
           },
           async logout() {
-            await axios.post('/api/auth/logout', {}, { withCredentials: true });
+            await axios.post("/api/auth/logout", {}, { withCredentials: true });
             this.user = null;
           },
           async fetchProducts() {
             const params = { q: this.keyword };
-            const { data } = await axios.get('/api/products', { params });
+            const { data } = await axios.get("/api/products", { params });
             this.products = data;
           },
           openAdd() {
-            this.form = { show: true, edit: false, _id: '', name: '', price: '', description: '' };
+            this.form = {
+              show: true,
+              edit: false,
+              _id: "",
+              name: "",
+              price: "",
+              description: "",
+            };
           },
           edit(p) {
-            this.form = { show: true, edit: true, _id: p._id, name: p.name, price: p.price, description: p.description };
+            this.form = {
+              show: true,
+              edit: true,
+              _id: p._id,
+              name: p.name,
+              price: p.price,
+              description: p.description,
+            };
           },
           closeForm() {
             this.form.show = false;
           },
           async save() {
-            const payload = { name: this.form.name, price: Number(this.form.price), description: this.form.description };
+            const payload = {
+              name: this.form.name,
+              price: Number(this.form.price),
+              description: this.form.description,
+            };
             if (this.form.edit) {
-              await axios.patch(`/api/products/${this.form._id}`, payload, { withCredentials: true });
+              await axios.patch(`/api/products/${this.form._id}`, payload, {
+                withCredentials: true,
+              });
             } else {
-              await axios.post('/api/products', payload, { withCredentials: true });
+              await axios.post("/api/products", payload, {
+                withCredentials: true,
+              });
             }
             this.closeForm();
             this.fetchProducts();
           },
           async remove(id) {
-            if (!confirm('Sure?')) return;
-            await axios.delete(`/api/products/${id}`, { withCredentials: true });
+            if (!confirm("Sure?")) return;
+            await axios.delete(`/api/products/${id}`, {
+              withCredentials: true,
+            });
             this.fetchProducts();
-          }
-        }
-      }).mount('#app');
+          },
+        },
+      }).mount("#app");
     </script>
   </body>
 </html>
