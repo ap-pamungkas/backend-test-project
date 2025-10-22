@@ -22,6 +22,12 @@ app.use(cors({ origin: true, credentials: true }));
 app.use(express.json());
 app.use(cookie());
 
+console.log('ENV CHECK:', {
+  NODE_ENV: process.env.NODE_ENV,
+  DATABASE_URL: process.env.DATABASE_URL,
+  JWT_SECRET: process.env.JWT_SECRET,
+});
+
 /* API */
 app.use('/api', router);
 
