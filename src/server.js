@@ -29,12 +29,10 @@ app.use('/api', router);
 
 /* Vue SPA */
 app.use(express.static(path.join(__dirname, '..', 'public')));
-app.get(/.*/, (_, res) =>
+app.get('/', (_, res) =>
   res.sendFile(path.resolve(__dirname, '..', 'public', 'index.html')
 ));
-app.use('/api', (req, res) => {
-  res.status(404).json({ message: 'API endpoint not found' });
-});
+
 // 404 handler
 app.use(( req, res )=>{
   res.status(404).sendFile(path.resolve(__dirname, '..', 'public', '404.html'));

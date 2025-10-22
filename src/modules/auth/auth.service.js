@@ -2,6 +2,7 @@ import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import { z } from "zod";
 import { getDB } from "../../config/db.js";
+import { ObjectId } from "mongodb";
 
 const col = () => getDB().collection("users");
 const RegisterDTO = z.object({
@@ -43,4 +44,19 @@ export const login = async (req, res, next) => {
   }
 };
 
-export const profile = (req, res) => res.json({ user: req.user });
+export const profile = async (req, res, next) => {
+  try {
+    const user = await col().findOne(
+      { _id: new ObjectId(req.user.uid) },
+      { projection: { password: 0 } }
+    );
+
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    res.json({ user: { id: user._id, email: user.email, name: user.name } });
+  } catch (e) {
+    next(e);
+  }
+};
