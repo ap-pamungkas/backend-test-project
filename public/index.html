@@ -167,12 +167,16 @@
                 <td>Rp {{ Number(p.price).toLocaleString('id-ID') }}</td>
                 <td>{{ p.description || '-' }}</td>
                 <td>
+                   <button class="btn btn-sm btn-info text-white me-1" @click="showDetail(p)">
+    View
+  </button>
                   <button class="btn btn-sm btn-warning me-1" @click="edit(p)">
                     Edit
                   </button>
                   <button class="btn btn-sm btn-danger" @click="remove(p._id)">
                     Delete
                   </button>
+                  
                 </td>
               </tr>
               <tr v-if="products.length === 0">
@@ -183,6 +187,54 @@
             </tbody>
           </table>
         </div>
+
+        <!-- ========== Modal Detail ========== -->
+<div
+  class="modal fade"
+  :class="{ show: detail.show }"
+  style="display: block"
+  tabindex="-1"
+  v-if="detail.show"
+>
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Product Detail</h5>
+        <button
+          type="button"
+          class="btn-close"
+          @click="closeDetail"
+        ></button>
+      </div>
+      <div class="modal-body">
+        <table class="table table-borderless mb-0">
+          <tr>
+            <td width="120"><strong>Name</strong></td>
+            <td>: {{ detail.name }}</td>
+          </tr>
+          <tr>
+            <td><strong>Price</strong></td>
+            <td>: Rp {{ Number(detail.price).toLocaleString('id-ID') }}</td>
+          </tr>
+          <tr>
+            <td><strong>Description</strong></td>
+            <td>: {{ detail.description || '-' }}</td>
+          </tr>
+        </table>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary btn-sm" @click="closeDetail">
+          Close
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+<div
+  class="modal-backdrop fade show"
+  v-if="detail.show"
+  @click="closeDetail"
+></div>
 
         <!-- Modal Add/Edit -->
         <div
@@ -273,6 +325,7 @@
               description: "",
             },
             toast: { show: false, message: "" },
+            detail: { show: false, name: '', price: '', description: '', _id: '' }
           };
         },
         
@@ -360,6 +413,14 @@
           // close modal
           closeForm() {
             this.form.show = false;
+          },
+// show detail modal
+          showDetail(p) {
+            this.detail = { show: true, ...p };
+          },
+// close detail modal
+          closeDetail() {
+            this.detail.show = false;
           },
 
           // save product

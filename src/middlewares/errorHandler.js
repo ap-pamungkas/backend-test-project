@@ -1,11 +1,4 @@
-/*
-  Error handler middleware
-  params:
-    err: error object
-    req: request object
-    res: response object
-    next: next middleware function
-*/
+
 
 export function errorHandler(err, req, res, next) {
   if (err.name === 'ZodError')

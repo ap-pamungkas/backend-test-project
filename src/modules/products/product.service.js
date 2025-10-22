@@ -10,14 +10,7 @@ const CreateDTO = z.object({
 });
 const UpdateDTO = CreateDTO.partial();
 
-/*
-  List products
-  params:
-    req: request object
-    res: response object
-    next: next middleware function
-*/
-
+// get all products
 export const list = async (req, res, next) => {
   try {
     const { q, page = 1, limit = 10 } = req.query;
@@ -44,14 +37,8 @@ export const list = async (req, res, next) => {
   }
 };
 
-/*
-  Create product
-  params:
-    req: request object
-    res: response object
-    next: next middleware function
-    */
 
+// create product
 export const create = async (req, res, next) => {
   try {
     const doc = CreateDTO.parse(req.body);
@@ -65,14 +52,7 @@ export const create = async (req, res, next) => {
 };
 
 
-/*
-  Get product by id
-  params:
-    req: request object
-    res: response object
-    next: next middleware function
-    */
-
+// get product by id
 export const getById = async (req, res, next) => {
   try {
     const item = await col().findOne({ _id: new ObjectId(req.params.id) });
@@ -83,14 +63,8 @@ export const getById = async (req, res, next) => {
   }
 };
 
-/*
-  Update product by id
-  params:
-    req: request object
-    res: response object
-    next: next middleware function
-    */
 
+// update product
 export const update = async (req, res, next) => {
   try {
     const data = UpdateDTO.parse(req.body);
@@ -108,14 +82,7 @@ export const update = async (req, res, next) => {
   }
 };
 
-/*
-  Remove product by id
-  params:
-    req: request object
-    res: response object
-    next: next middleware function
-    */
-
+// delete product
 export const remove = async (req, res, next) => {
   try {
     const ownerId = new ObjectId(req.user.uid);
