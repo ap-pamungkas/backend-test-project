@@ -3,7 +3,7 @@ import * as svc from './product.service.js';
 import { authGuard } from '../../middlewares/authGuard.js';
 
 const router = express.Router();
-router.get('/', svc.list);
+router.get('/', authGuard, svc.list);
 router.post('/', authGuard, svc.create);
 router.get('/:id', svc.getById);
 router.patch('/:id', authGuard, svc.update);

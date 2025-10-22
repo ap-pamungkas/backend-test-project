@@ -268,7 +268,11 @@
         async mounted() {
           await this.checkUser();
           this.loading = false;
-          this.fetchProducts();
+          await this.fetchProducts();
+
+          if (this.user) {
+             this.fetchProducts();
+          }
         },
         methods: {
           async checkUser() {

@@ -13,7 +13,20 @@ const UpdateDTO = CreateDTO.partial();
 export const list = async (req, res, next) => {
   try {
     const { q, page = 1, limit = 10 } = req.query;
-    const filter = q ? { name: { $regex: q, $options: 'i' } } : {};
+    
+
+    const ownerId = new ObjectId(req.user.uid);
+    
+  
+    let filter = { ownerId }; 
+
+    if (q) {
+      filter = { 
+          ...filter, // Pertahankan filter ownerId
+          name: { $regex: q, $options: 'i' } 
+      };
+    }
+    
     const list = await col()
       .find(filter)
       .limit(Number(limit))
