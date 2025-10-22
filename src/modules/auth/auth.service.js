@@ -11,6 +11,14 @@ const RegisterDTO = z.object({
   name: z.string().min(2),
 });
 
+/*
+  Register user
+  params:
+    req: request object
+    res: response object
+    next: next middleware function
+*/
+
 export const register = async (req, res, next) => {
   try {
     const { email, password, name } = RegisterDTO.parse(req.body);
@@ -28,6 +36,14 @@ export const register = async (req, res, next) => {
   }
 };
 
+/*
+  Login user
+  params:
+    req: request object
+    res: response object
+    next: next middleware function
+    */
+
 export const login = async (req, res, next) => {
   try {
     const { email, password } = req.body;
@@ -43,6 +59,14 @@ export const login = async (req, res, next) => {
     next(e);
   }
 };
+
+/*
+  Profile user
+  params:
+    req: request object
+    res: response object
+    next: next middleware function
+*/
 
 export const profile = async (req, res, next) => {
   try {
