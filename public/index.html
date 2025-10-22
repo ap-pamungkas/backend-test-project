@@ -11,7 +11,7 @@
     <script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
     <style>
-      /* custom agar toast berada di pojok kanan atas */
+     
       .toast-container {
         position: fixed;
         top: 15px;
@@ -40,7 +40,11 @@
           </div>
         </div>
       </div>
-
+<div v-if="loading" class="text-center mt-5">
+  <div class="spinner-border" role="status">
+    <span class="visually-hidden">Loading...</span>
+  </div>
+</div>
       <!-- ========== Auth Card ========== -->
       <div class="container mt-5" v-if="!user">
         <div class="row justify-content-center">
@@ -252,6 +256,7 @@
         data() {
           return {
             user: null,
+            loading: true,
             reg: { name: '', email: '', password: '' },
             log: { email: '', password: '' },
             products: [],
@@ -262,6 +267,7 @@
         },
         async mounted() {
           await this.checkUser();
+          this.loading = false;
           this.fetchProducts();
         },
         methods: {
@@ -269,7 +275,11 @@
             try {
               const { data } = await axios.get('/api/auth/me', { withCredentials: true });
               this.user = data.user;
-            } catch {}
+
+              
+            } catch {
+              this.user = null;
+            }
           },
           async register() {
             try {

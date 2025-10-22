@@ -1,7 +1,6 @@
 import express from 'express';
 import cookie from 'cookie-parser';
 import cors from 'cors';
-
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { connectDB } from './config/db.js';
@@ -22,20 +21,25 @@ app.use(cors({ origin: true, credentials: true }));
 app.use(express.json());
 app.use(cookie());
 
-console.log('ENV CHECK:', {
-  NODE_ENV: process.env.NODE_ENV,
-  DATABASE_URL: process.env.DATABASE_URL,
-  JWT_SECRET: process.env.JWT_SECRET,
-});
+
 
 /* API */
 app.use('/api', router);
 
+
 /* Vue SPA */
 app.use(express.static(path.join(__dirname, '..', 'public')));
 app.get(/.*/, (_, res) =>
-  res.sendFile(path.resolve(__dirname, '..', 'public', 'index.html'))
-);
+  res.sendFile(path.resolve(__dirname, '..', 'public', 'index.html')
+));
+app.use('/api', (req, res) => {
+  res.status(404).json({ message: 'API endpoint not found' });
+});
+// 404 handler
+app.use(( req, res )=>{
+  res.status(404).sendFile(path.resolve(__dirname, '..', 'public', '404.html'));
+});
+
 
 app.use(errorHandler);
 const PORT = process.env.PORT || 3000;
