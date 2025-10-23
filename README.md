@@ -23,19 +23,19 @@ Struktur proyek dibuat modular untuk memisahkan tanggung jawab (Separation of Co
 
 <pre>  
 src/
+├── app.js              # Konfigurasi utama Express
+├── server.js           # Titik masuk server
 ├── modules/
 │   ├── auth/
-│   │   ├── service.js    # Logika bisnis Auth
-│   │   └── route.js      # Endpoint Auth
 │   └── products/
-│       ├── service.js    # Logika bisnis Product
-│       └── route.js      # Endpoint Product
 ├── middlewares/
-│   ├── authGuard.js
-│   └── errorHandler.js
 ├── config/
-│   └── db.js
-└── server.js
+└── routes.js           # Router utama
+tests/
+├── helpers
+│   ├── request.js
+├── auth.test.js
+└── products.test.js
  </pre>
 
 - `service.js`: berisi logika bisnis, validasi input, dan interaksi database.
