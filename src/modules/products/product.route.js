@@ -5,7 +5,7 @@ import { authGuard } from '../../middlewares/authGuard.js';
 const router = express.Router();
 router.get('/', authGuard, svc.list);
 router.post('/', authGuard, svc.create);
-router.get('/:id', svc.getById);
+router.get('/:id', authGuard, svc.getById);
 router.patch('/:id', authGuard, svc.update);
 router.delete('/:id', authGuard, svc.remove);
 

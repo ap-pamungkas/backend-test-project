@@ -15,9 +15,10 @@ export const list = async (req, res, next) => {
   try {
     const { q, page = 1, limit = 10 } = req.query;
 
-    const ownerId = new ObjectId(req.user.uid);
-
+   const ownerId = new ObjectId(req.user.id || req.user.uid);
     let filter = { ownerId };
+
+
 
     if (q) {
       filter = {
@@ -41,11 +42,18 @@ export const list = async (req, res, next) => {
 // create product
 export const create = async (req, res, next) => {
   try {
-    const doc = CreateDTO.parse(req.body);
+    const { name, price, description } = req.body;
 
-    doc.ownerId = new ObjectId(req.user.uid);
-    const { insertedId } = await col().insertOne(doc);
-    res.status(201).json({ ...doc, _id: insertedId });
+    const product = {
+      name,
+      price,
+      description,
+      ownerId: new ObjectId(req.user.uid),
+      createdAt: new Date()
+    };
+
+    const result = await col("products").insertOne(product);
+    res.status(201).json(result);
   } catch (e) {
     next(e);
   }
@@ -67,33 +75,44 @@ export const getById = async (req, res, next) => {
 // update product
 export const update = async (req, res, next) => {
   try {
-    const data = UpdateDTO.parse(req.body);
-
+    const { id } = req.params;
     const ownerId = new ObjectId(req.user.uid);
-    const { matchedCount } = await col().updateOne(
-      { _id: new ObjectId(req.params.id), ownerId: ownerId },
-      { $set: data }
+
+    const result = await col("products").updateOne(
+      { _id: new ObjectId(id), ownerId },
+      { $set: req.body }
     );
-    if (!matchedCount)
-      return res.status(404).json({ message: "Not found / Forbidden" });
-    res.json({ message: "Updated" });
+
+    if (result.matchedCount === 0) {
+      return res.status(403).json({ message: "Forbidden or Not Found" });
+    }
+
+    res.json({ message: "Product updated" });
   } catch (e) {
     next(e);
   }
 };
+
+
 
 // delete product
 export const remove = async (req, res, next) => {
   try {
+    const { id } = req.params;
     const ownerId = new ObjectId(req.user.uid);
-    const { deletedCount } = await col().deleteOne({
-      _id: new ObjectId(req.params.id),
-      ownerId: ownerId,
+
+    const result = await col("products").deleteOne({
+      _id: new ObjectId(id),
+      ownerId
     });
-    if (!deletedCount)
-      return res.status(404).json({ message: "Not found / Forbidden" });
-    res.json({ message: "Deleted" });
+
+    if (result.deletedCount === 0) {
+      return res.status(403).json({ message: "Forbidden or Not Found" });
+    }
+
+    res.json({ message: "Product deleted" });
   } catch (e) {
     next(e);
   }
 };
+
